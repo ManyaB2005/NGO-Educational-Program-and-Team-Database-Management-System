@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sessions</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="dashboard.html">Home</a>
+        <a href="member.html">Members</a>
+        <a href="teams.html">Teams</a>
+        <a href="education.html">Education</a>
+        <a href="member_education.html">Member Education</a>
+        <a href="education_skills.html">Education Skills</a>
+        <a href="session.html">Sessions</a>
+        <a href="events.html">Events</a>
+        <a href="query.html">Query Dashboard</a>
+        <a href="index.html" class="logout">Logout </a>
+    </div>
+
+<section class="hero">
+    <h1>Session Management</h1>
+    <p>Schedule and manage training sessions</p>
+</section>
+
+<div class="container">
+    <h1 class="page-title">Session Management</h1>
+    <div class="tab-content">
+        <form id="sessionForm">
+            <div class="form-group"><input type="text" id="Session_ID" placeholder="Session ID" required></div>
+            <div class="form-group"><input type="text" id="Session_Name" placeholder="Session Name" required></div>
+            <div class="form-group"><input type="date" id="Session_Date" required></div>
+            <div class="form-group"><input type="text" id="Session_Duration" placeholder="Duration (hrs)" required></div>
+            <div class="form-group"><input type="text" id="Mode_of_Session" placeholder="Mode (Online/Offline)" required></div>
+            <div class="form-group"><input type="number" id="Member_ID" placeholder="Member ID" required></div>
+            <div class="form-group"><button type="submit">Add Session</button><button type="button" id="updateBtn" style="display:none;">Update Session</button></div>
+        </form>
+    </div>
+    <div class="table-container">
+        <table id="sessionTable">
+        <thead>
+        <tr>
+        <th>ID</th><th>Name</th><th>Date</th><th>Duration</th><th>Mode</th><th>Member ID</th><th>Member Name</th><th>Action</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function loadSessions() {
+    const res = await fetch("/sessions");
+    const data = await res.json();
+    const tbody = document.querySelector("#sessionTable tbody");
+    tbody.innerHTML = "";
+    data.forEach(s=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${s.Session_ID}</td>
+            <td>${s.Session_Name}</td>
+            <td>${s.Session_Date?.split("T")[0]}</td>
+            <td>${s.Session_Duration}</td>
+            <td>${s.Mode_of_Session}</td>
+            <td>${s.Member_ID}</td>
+            <td>${s.First_Name||""}</td>
+            <td><button onclick="editSession('${s.Session_ID}')">Edit</button> <button onclick="deleteSession('${s.Session_ID}')">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function deleteSession(id){
+    await fetch(`/deleteSession/${id}`, { method: "DELETE" });
+    loadSessions();
+}
+
+async function editSession(id){
+    try {
+        const res = await fetch("/sessions");
+        if (!res.ok) throw new Error("Failed to fetch sessions");
+        const data = await res.json();
+        const session = data.find(s => s.Session_ID === id);
+        if(session){
+            document.getElementById("Session_ID").value = session.Session_ID;
+            document.getElementById("Session_ID").readOnly = true;
+            document.getElementById("Session_Name").value = session.Session_Name;
+            document.getElementById("Session_Date").value = session.Session_Date?.split("T")[0];
+            document.getElementById("Session_Duration").value = session.Session_Duration;
+            document.getElementById("Mode_of_Session").value = session.Mode_of_Session;
+            document.getElementById("Member_ID").value = session.Member_ID;
+            document.getElementById("updateBtn").style.display = "inline";
+            document.querySelector("button[type='submit']").style.display = "none";
+            document.getElementById("updateBtn").onclick = () => updateSession(id);
+        }
+    } catch (error) {
+        alert("Error editing session: " + error.message);
+    }
+}
+
+async function updateSession(id){
+    try {
+        const data = {
+            Session_Name: document.getElementById("Session_Name").value,
+            Session_Date: document.getElementById("Session_Date").value,
+            Session_Duration: document.getElementById("Session_Duration").value,
+            Mode_of_Session: document.getElementById("Mode_of_Session").value,
+            Member_ID: parseInt(document.getElementById("Member_ID").value)
+        };
+        const res = await fetch(`/updateSession/${id}`, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+        if (!res.ok) throw new Error("Failed to update session");
+        document.getElementById("Session_ID").readOnly = false;
+        document.getElementById("sessionForm").reset();
+        document.getElementById("updateBtn").style.display = "none";
+        document.querySelector("button[type='submit']").style.display = "inline";
+        loadSessions();
+    } catch (error) {
+        alert("Error updating session: " + error.message);
+    }
+}
+
+document.getElementById("sessionForm").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const data = {
+        Session_ID: document.getElementById("Session_ID").value,
+        Session_Name: document.getElementById("Session_Name").value,
+        Session_Date: document.getElementById("Session_Date").value,
+        Session_Duration: document.getElementById("Session_Duration").value,
+        Mode_of_Session: document.getElementById("Mode_of_Session").value,
+        Member_ID: parseInt(document.getElementById("Member_ID").value)
+    };
+    const res = await fetch("/addSession", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    });
+    if(res.ok){
+        document.getElementById("sessionForm").reset();
+        loadSessions();
+    } else {
+        const err = await res.json();
+        alert("❌ Failed to add session: " + err.error.sqlMessage);
+    }
+});
+
+loadSessions();
+</script>
+
+</body>
+</html>

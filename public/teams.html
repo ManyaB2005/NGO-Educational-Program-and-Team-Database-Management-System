@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Teams</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="navbar">
+        <a href="dashboard.html">Home</a>
+        <a href="member.html">Members</a>
+        <a href="teams.html">Teams</a>
+        <a href="education.html">Education</a>
+        <a href="member_education.html">Member Education</a>
+        <a href="education_skills.html">Education Skills</a>
+        <a href="session.html">Sessions</a>
+        <a href="events.html">Events</a>
+        <a href="query.html">Query Dashboard</a>
+        <a href="index.html" class="logout">Logout </a>
+    </div>
+
+<section class="hero">
+    <h1>Teams Management</h1>
+    <p>Organize and oversee team structures</p>
+</section>
+
+<div class="container">
+    <h1 class="page-title">Teams Management</h1>
+    <div class="tab-content">
+        <form id="teamForm">
+            <div class="form-group"><input type="number" id="Team_ID" placeholder="Team ID" required></div>
+            <div class="form-group"><input type="text" id="Team_Name" placeholder="Team Name" required></div>
+            <div class="form-group"><input type="number" id="Team_Size" placeholder="Team Size" required></div>
+            <div class="form-group"><button type="submit">Add Team</button><button type="button" id="updateBtn" style="display:none;">Update Team</button></div>
+        </form>
+    </div>
+    <div class="table-container">
+        <table id="teamTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+    <script>
+        async function loadTeams() {
+            const res = await fetch("/teams");
+            const data = await res.json();
+            const tbody = document.querySelector("#teamTable tbody");
+            tbody.innerHTML = "";
+            data.forEach(t => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `<td>${t.Team_ID}</td><td>${t.Team_Name}</td><td>${t.Team_Size}</td><td><button onclick="editTeam(${t.Team_ID})">Edit</button> <button onclick="deleteTeam(${t.Team_ID})">Delete</button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        async function deleteTeam(id) {
+            await fetch(`/deleteTeam/${id}`, { method: "DELETE" });
+            loadTeams();
+        }
+
+        async function editTeam(id) {
+            try {
+                const res = await fetch("/teams");
+                if (!res.ok) throw new Error("Failed to fetch teams");
+                const data = await res.json();
+                const team = data.find(t => t.Team_ID == id);
+                if (team) {
+                    document.getElementById("Team_ID").value = team.Team_ID;
+                    document.getElementById("Team_ID").readOnly = true;
+                    document.getElementById("Team_Name").value = team.Team_Name;
+                    document.getElementById("Team_Size").value = team.Team_Size;
+                    document.getElementById("updateBtn").style.display = "inline";
+                    document.querySelector("button[type='submit']").style.display = "none";
+                    document.getElementById("updateBtn").onclick = () => updateTeam(id);
+                }
+            } catch (error) {
+                alert("Error editing team: " + error.message);
+            }
+        }
+
+        async function updateTeam(id) {
+            try {
+                const data = {
+                    Team_Name: document.getElementById("Team_Name").value,
+                    Team_Size: +document.getElementById("Team_Size").value
+                };
+                const res = await fetch(`/updateTeam/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+                if (!res.ok) throw new Error("Failed to update team");
+                document.getElementById("Team_ID").readOnly = false;
+                document.getElementById("teamForm").reset();
+                document.getElementById("updateBtn").style.display = "none";
+                document.querySelector("button[type='submit']").style.display = "inline";
+                loadTeams();
+            } catch (error) {
+                alert("Error updating team: " + error.message);
+            }
+        }
+        document.getElementById("teamForm").addEventListener("submit", async e => {
+            e.preventDefault();
+            const data = {
+                Team_ID: +document.getElementById("Team_ID").value,
+                Team_Name: document.getElementById("Team_Name").value,
+                Team_Size: +document.getElementById("Team_Size").value
+            };
+            await fetch("/addTeam", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+            document.getElementById("teamForm").reset();
+            loadTeams();
+        });
+        loadTeams();
+    </script>
+</body>
+
+</html>

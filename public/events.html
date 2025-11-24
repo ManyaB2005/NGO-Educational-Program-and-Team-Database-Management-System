@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Events</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="dashboard.html">Home</a>
+        <a href="member.html">Members</a>
+        <a href="teams.html">Teams</a>
+        <a href="education.html">Education</a>
+        <a href="member_education.html">Member Education</a>
+        <a href="education_skills.html">Education Skills</a>
+        <a href="session.html">Sessions</a>
+        <a href="events.html">Events</a>
+        <a href="query.html">Query Dashboard</a>
+        <a href="index.html" class="logout">Logout </a>
+    </div>
+
+<section class="hero">
+    <h1>Events Management</h1>
+    <p>Plan and coordinate community events</p>
+</section>
+
+<div class="container">
+    <h1 class="page-title">Events Management</h1>
+    <div class="tab-content">
+        <form id="eventForm">
+            <div class="form-group"><input type="number" id="Event_ID" placeholder="Event ID" required></div>
+            <div class="form-group"><input type="text" id="Event_Name" placeholder="Event Name" required></div>
+            <div class="form-group"><input type="date" id="Event_Date" placeholder="Event Date" required></div>
+            <div class="form-group"><input type="number" id="Event_Duration" placeholder="Event Duration" required></div>
+            <div class="form-group"><input type="text" id="Event_Location" placeholder="Event Location" required></div>
+            <div class="form-group"><input type="number" id="Number_of_Participants" placeholder="Number of Participants" required></div>
+            <div class="form-group"><input type="number" id="Team_ID" placeholder="Team ID" required></div>
+            <div class="form-group"><button type="submit">Add Event</button><button type="button" id="updateBtn" style="display:none;">Update Event</button></div>
+        </form>
+    </div>
+    <div class="table-container">
+        <table id="eventTable">
+        <thead>
+        <tr>
+        <th>ID</th><th>Name</th><th>Date</th><th>Duration</th><th>Location</th><th>Participants</th><th>Team</th><th>Action</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function loadEvents(){
+    const res = await fetch("/events");
+    const data = await res.json();
+    const tbody = document.querySelector("#eventTable tbody");
+    tbody.innerHTML = "";
+    data.forEach(e=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${e.Event_ID}</td><td>${e.Event_Name}</td><td>${e.Event_Date?.split("T")[0]}</td><td>${e.Event_Duration}</td><td>${e.Event_Location}</td><td>${e.Number_of_Participants}</td><td>${e.Team_ID}</td><td><button onclick="editEvent(${e.Event_ID})">Edit</button> <button onclick="deleteEvent(${e.Event_ID})">Delete</button></td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+async function deleteEvent(id){
+    await fetch(`/deleteEvent/${id}`,{method:"DELETE"});
+    loadEvents();
+}
+
+async function editEvent(id){
+    try {
+        const res = await fetch("/events");
+        if (!res.ok) throw new Error("Failed to fetch events");
+        const data = await res.json();
+        const event = data.find(e => e.Event_ID == id);
+        if(event){
+            document.getElementById("Event_ID").value = event.Event_ID;
+            document.getElementById("Event_ID").readOnly = true;
+            document.getElementById("Event_Name").value = event.Event_Name;
+            document.getElementById("Event_Date").value = event.Event_Date?.split("T")[0];
+            document.getElementById("Event_Duration").value = event.Event_Duration;
+            document.getElementById("Event_Location").value = event.Event_Location;
+            document.getElementById("Number_of_Participants").value = event.Number_of_Participants;
+            document.getElementById("Team_ID").value = event.Team_ID;
+            document.getElementById("updateBtn").style.display = "inline";
+            document.querySelector("button[type='submit']").style.display = "none";
+            document.getElementById("updateBtn").onclick = () => updateEvent(id);
+        }
+    } catch (error) {
+        alert("Error editing event: " + error.message);
+    }
+}
+
+async function updateEvent(id){
+    try {
+        const data = {
+            Event_Name: document.getElementById("Event_Name").value,
+            Event_Date: document.getElementById("Event_Date").value,
+            Event_Duration: +document.getElementById("Event_Duration").value,
+            Event_Location: document.getElementById("Event_Location").value,
+            Number_of_Participants: +document.getElementById("Number_of_Participants").value,
+            Team_ID: +document.getElementById("Team_ID").value
+        };
+        const res = await fetch(`/updateEvent/${id}`, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+        if (!res.ok) throw new Error("Failed to update event");
+        document.getElementById("Event_ID").readOnly = false;
+        document.getElementById("eventForm").reset();
+        document.getElementById("updateBtn").style.display = "none";
+        document.querySelector("button[type='submit']").style.display = "inline";
+        loadEvents();
+    } catch (error) {
+        alert("Error updating event: " + error.message);
+    }
+}
+
+document.getElementById("eventForm").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const data={
+        Event_ID:+document.getElementById("Event_ID").value,
+        Event_Name:document.getElementById("Event_Name").value,
+        Event_Date:document.getElementById("Event_Date").value,
+        Event_Duration:+document.getElementById("Event_Duration").value,
+        Event_Location:document.getElementById("Event_Location").value,
+        Number_of_Participants:+document.getElementById("Number_of_Participants").value,
+        Team_ID:+document.getElementById("Team_ID").value
+    };
+    await fetch("/addEvent",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    document.getElementById("eventForm").reset();
+    loadEvents();
+});
+
+loadEvents();
+</script>
+</body>
+</html>

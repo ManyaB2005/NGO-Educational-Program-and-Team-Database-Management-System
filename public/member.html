@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Members</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="dashboard.html">Home</a>
+        <a href="member.html">Members</a>
+        <a href="teams.html">Teams</a>
+        <a href="education.html">Education</a>
+        <a href="member_education.html">Member Education</a>
+        <a href="education_skills.html">Education Skills</a>
+        <a href="session.html">Sessions</a>
+        <a href="events.html">Events</a>
+        <a href="query.html">Query Dashboard</a>
+        <a href="index.html" class="logout">Logout </a>
+    </div>
+
+<section class="hero">
+    <h1>Member Management</h1>
+    <p>Manage and view member information</p>
+</section>
+
+<div class="container">
+    <h1 class="page-title">Member Management</h1>
+    <div class="tab-content">
+        <form id="memberForm">
+            <div class="form-group"><input type="text" id="Member_ID" placeholder="ID" required></div>
+            <div class="form-group"><input type="text" id="First_Name" placeholder="First Name" required></div>
+            <div class="form-group"><input type="text" id="Middle_Name" placeholder="Middle Name"></div>
+            <div class="form-group"><input type="text" id="Last_Name" placeholder="Last Name" required></div>
+            <div class="form-group"><input type="text" id="Contact" placeholder="Contact" required></div>
+            <div class="form-group"><input type="email" id="Email" placeholder="Email" required></div>
+            <div class="form-group"><input type="date" id="DOB" placeholder="DOB" required></div>
+            <div class="form-group"><input type="number" id="Age" placeholder="Age" required></div>
+            <div class="form-group"><input type="number" id="Team_ID" placeholder="Team ID"></div>
+            <div class="form-group"><button type="submit">Add Member</button><button type="button" id="updateBtn" style="display:none;">Update Member</button></div>
+        </form>
+    </div>
+    <table id="memberTable" class="table-container">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Middle Name</th>
+                <th>Last Name</th>
+                <th>Contact</th>
+                <th>Email</th>
+                <th>DOB</th>
+                <th>Age</th>
+                <th>Team ID</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+async function loadMembers() {
+    const res = await fetch("/members");
+    const data = await res.json();
+    const tbody = document.querySelector("#memberTable tbody");
+    tbody.innerHTML = "";
+    data.forEach(m => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${m.Member_ID}</td>
+          <td>${m.First_Name}</td>
+          <td>${m.Middle_Name || ""}</td>
+          <td>${m.Last_Name}</td>
+          <td>${m.Contact}</td>
+          <td>${m.Email}</td>
+          <td>${m.DOB?.split("T")[0]}</td>
+          <td>${m.Age}</td>
+          <td>${m.Team_ID || ""}</td>
+          <td>
+            <button onclick="editMember(${m.Member_ID})">Edit</button>
+            <button onclick="deleteMember(${m.Member_ID})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function deleteMember(id){
+    await fetch(`/deleteMember/${id}`,{method:"DELETE"});
+    loadMembers();
+}
+
+async function editMember(id){
+    try {
+        const res = await fetch("/members");
+        if (!res.ok) throw new Error("Failed to fetch members");
+        const data = await res.json();
+        const member = data.find(m => m.Member_ID == id);
+        if(member){
+            document.getElementById("Member_ID").value = member.Member_ID;
+            document.getElementById("Member_ID").readOnly = true;
+            document.getElementById("First_Name").value = member.First_Name;
+            document.getElementById("Middle_Name").value = member.Middle_Name || "";
+            document.getElementById("Last_Name").value = member.Last_Name;
+            document.getElementById("Contact").value = member.Contact;
+            document.getElementById("Email").value = member.Email;
+            document.getElementById("DOB").value = member.DOB?.split("T")[0];
+            document.getElementById("Age").value = member.Age;
+            document.getElementById("Team_ID").value = member.Team_ID || "";
+            document.getElementById("updateBtn").style.display = "inline";
+            document.querySelector("button[type='submit']").style.display = "none";
+            document.getElementById("updateBtn").onclick = () => updateMember(id);
+        }
+    } catch (error) {
+        alert("Error editing member: " + error.message);
+    }
+}
+
+async function updateMember(id){
+    try {
+        const data = {
+            First_Name: document.getElementById("First_Name").value,
+            Middle_Name: document.getElementById("Middle_Name").value,
+            Last_Name: document.getElementById("Last_Name").value,
+            Contact: document.getElementById("Contact").value,
+            Email: document.getElementById("Email").value,
+            DOB: document.getElementById("DOB").value,
+            Age: +document.getElementById("Age").value,
+            Team_ID: +document.getElementById("Team_ID").value
+        };
+        const res = await fetch(`/updateMember/${id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+        if (!res.ok) throw new Error("Failed to update member");
+        document.getElementById("Member_ID").readOnly = false;
+        document.getElementById("memberForm").reset();
+        document.getElementById("updateBtn").style.display = "none";
+        document.querySelector("button[type='submit']").style.display = "inline";
+        loadMembers();
+    } catch (error) {
+        alert("Error updating member: " + error.message);
+    }
+}
+
+document.getElementById("memberForm").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const data = {
+  Member_ID: +document.getElementById("Member_ID").value,
+  First_Name: document.getElementById("First_Name").value,
+  Middle_Name: document.getElementById("Middle_Name").value,
+  Last_Name: document.getElementById("Last_Name").value,
+  Contact: document.getElementById("Contact").value,
+  Email: document.getElementById("Email").value,
+  DOB: document.getElementById("DOB").value,
+  Age: +document.getElementById("Age").value,
+  Team_ID: +document.getElementById("Team_ID").value
+};
+
+    await fetch("/addMember",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    document.getElementById("memberForm").reset();
+    loadMembers();
+});
+
+loadMembers();
+</script>

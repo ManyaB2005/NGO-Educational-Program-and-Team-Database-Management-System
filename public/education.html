@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Education</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="dashboard.html">Home</a>
+        <a href="member.html">Members</a>
+        <a href="teams.html">Teams</a>
+        <a href="education.html">Education</a>
+        <a href="member_education.html">Member Education</a>
+        <a href="education_skills.html">Education Skills</a>
+        <a href="session.html">Sessions</a>
+        <a href="events.html">Events</a>
+        <a href="query.html">Query Dashboard</a>
+        <a href="index.html" class="logout">Logout </a>
+    </div>
+
+<section class="hero">
+    <h1>Education Management</h1>
+    <p>Track educational programs and initiatives</p>
+</section>
+
+<div class="container">
+    <h1 class="page-title">Education Management</h1>
+    <div class="tab-content">
+        <form id="educationForm">
+            <div class="form-group"><input type="text" id="USN" placeholder="USN" required></div>
+            <div class="form-group"><input type="text" id="Degree" placeholder="Degree" required></div>
+            <div class="form-group"><input type="text" id="Institution_Name" placeholder="Institution Name" required></div>
+            <div class="form-group"><input type="text" id="Field_of_Study" placeholder="Field of Study" required></div>
+            <div class="form-group"><button type="submit">Add Education</button><button type="button" id="updateBtn" style="display:none;">Update Education</button></div>
+        </form>
+    </div>
+    <div class="table-container">
+        <table id="educationTable">
+        <thead>
+        <tr><th>USN</th><th>Degree</th><th>Institution</th><th>Field</th><th>Action</th></tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function loadEducation() {
+    const res = await fetch("/education");
+    const data = await res.json();
+    const tbody = document.querySelector("#educationTable tbody");
+    tbody.innerHTML = "";
+    data.forEach(e => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${e.USN}</td><td>${e.Degree}</td><td>${e.Institution_Name}</td><td>${e.Field_of_Study}</td><td><button onclick="editEducation('${e.USN}')">Edit</button> <button onclick="deleteEducation('${e.USN}')">Delete</button></td>`;
+        tbody.appendChild(tr);
+    });
+}
+async function deleteEducation(usn) {
+    await fetch(`/deleteEducation/${usn}`, {method:"DELETE"});
+    loadEducation();
+}
+
+async function editEducation(usn) {
+    try {
+        const res = await fetch("/education");
+        if (!res.ok) throw new Error("Failed to fetch education");
+        const data = await res.json();
+        const education = data.find(e => e.USN === usn);
+        if (education) {
+            document.getElementById("USN").value = education.USN;
+            document.getElementById("USN").readOnly = true;
+            document.getElementById("Degree").value = education.Degree;
+            document.getElementById("Institution_Name").value = education.Institution_Name;
+            document.getElementById("Field_of_Study").value = education.Field_of_Study;
+            document.getElementById("updateBtn").style.display = "inline";
+            document.querySelector("button[type='submit']").style.display = "none";
+            document.getElementById("updateBtn").onclick = () => updateEducation(usn);
+        }
+    } catch (error) {
+        alert("Error editing education: " + error.message);
+    }
+}
+
+async function updateEducation(usn) {
+    try {
+        const data = {
+            Degree: document.getElementById("Degree").value,
+            Institution_Name: document.getElementById("Institution_Name").value,
+            Field_of_Study: document.getElementById("Field_of_Study").value
+        };
+        const res = await fetch(`/updateEducation/${usn}`, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+        if (!res.ok) throw new Error("Failed to update education");
+        document.getElementById("USN").readOnly = false;
+        document.getElementById("educationForm").reset();
+        document.getElementById("updateBtn").style.display = "none";
+        document.querySelector("button[type='submit']").style.display = "inline";
+        loadEducation();
+    } catch (error) {
+        alert("Error updating education: " + error.message);
+    }
+}
+document.getElementById("educationForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const data = {
+        USN: document.getElementById("USN").value,
+        Degree: document.getElementById("Degree").value,
+        Institution_Name: document.getElementById("Institution_Name").value,
+        Field_of_Study: document.getElementById("Field_of_Study").value
+    };
+    await fetch("/addEducation", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+    document.getElementById("educationForm").reset();
+    loadEducation();
+});
+loadEducation();
+</script>
+</body>
+</html>

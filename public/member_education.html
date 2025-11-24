@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Member Education</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="dashboard.html">Home</a>
+        <a href="member.html">Members</a>
+        <a href="teams.html">Teams</a>
+        <a href="education.html">Education</a>
+        <a href="member_education.html">Member Education</a>
+        <a href="education_skills.html">Education Skills</a>
+        <a href="session.html">Sessions</a>
+        <a href="events.html">Events</a>
+        <a href="query.html">Query Dashboard</a>
+        <a href="index.html" class="logout">Logout </a>
+    </div>
+
+<section class="hero">
+    <h1>Member Education</h1>
+    <p>Link members to their educational achievements</p>
+</section>
+
+<div class="container">
+    <h1 class="page-title">Member Education</h1>
+    <div class="tab-content">
+        <form id="memberEduForm">
+            <div class="form-group"><input type="text" id="USN" placeholder="USN" required></div>
+            <div class="form-group"><input type="number" id="Member_ID" placeholder="Member ID" required></div>
+            <div class="form-group"><button type="submit">Add</button><button type="button" id="updateBtn" style="display:none;">Update</button></div>
+        </form>
+    </div>
+    <div class="table-container">
+        <table id="memberEduTable">
+        <thead>
+        <tr><th>USN</th><th>Member ID</th><th>Action</th></tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function loadMemberEdu() {
+    const res = await fetch("/member_education");
+    const data = await res.json();
+    const tbody = document.querySelector("#memberEduTable tbody");
+    tbody.innerHTML = "";
+    data.forEach(m => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${m.USN}</td><td>${m.Member_ID}</td><td><button onclick="editMemberEdu('${m.USN}',${m.Member_ID})">Edit</button> <button onclick="deleteMemberEdu('${m.USN}',${m.Member_ID})">Delete</button></td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+async function deleteMemberEdu(usn, id) {
+    await fetch(`/deleteMemberEducation/${usn}/${id}`, {method:"DELETE"});
+    loadMemberEdu();
+}
+
+async function editMemberEdu(usn, id) {
+    try {
+        const res = await fetch("/member_education");
+        if (!res.ok) throw new Error("Failed to fetch member education");
+        const data = await res.json();
+        const memberEdu = data.find(m => m.USN === usn && m.Member_ID == id);
+        if (memberEdu) {
+            document.getElementById("USN").value = memberEdu.USN;
+            document.getElementById("USN").readOnly = true;
+            document.getElementById("Member_ID").value = memberEdu.Member_ID;
+            document.getElementById("Member_ID").readOnly = true;
+            document.getElementById("updateBtn").style.display = "inline";
+            document.querySelector("button[type='submit']").style.display = "none";
+            document.getElementById("updateBtn").onclick = () => updateMemberEdu(usn, id);
+        }
+    } catch (error) {
+        alert("Error editing member education: " + error.message);
+    }
+}
+
+async function updateMemberEdu(usn, id) {
+    try {
+        const data = {
+            new_USN: document.getElementById("USN").value,
+            new_Member_ID: +document.getElementById("Member_ID").value
+        };
+        const res = await fetch(`/updateMemberEducation/${usn}/${id}`, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+        if (!res.ok) throw new Error("Failed to update member education");
+        document.getElementById("USN").readOnly = false;
+        document.getElementById("Member_ID").readOnly = false;
+        document.getElementById("memberEduForm").reset();
+        document.getElementById("updateBtn").style.display = "none";
+        document.querySelector("button[type='submit']").style.display = "inline";
+        loadMemberEdu();
+    } catch (error) {
+        alert("Error updating member education: " + error.message);
+    }
+}
+
+document.getElementById("memberEduForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const data = {
+        USN: document.getElementById("USN").value,
+        Member_ID: +document.getElementById("Member_ID").value
+    };
+    await fetch("/addMemberEducation", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+    document.getElementById("memberEduForm").reset();
+    loadMemberEdu();
+});
+
+loadMemberEdu();
+</script>
+</body>
+</html>

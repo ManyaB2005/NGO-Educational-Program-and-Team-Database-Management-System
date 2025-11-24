@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Education Skills</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="dashboard.html">Home</a>
+        <a href="member.html">Members</a>
+        <a href="teams.html">Teams</a>
+        <a href="education.html">Education</a>
+        <a href="member_education.html">Member Education</a>
+        <a href="education_skills.html">Education Skills</a>
+        <a href="session.html">Sessions</a>
+        <a href="events.html">Events</a>
+        <a href="query.html">Query Dashboard</a>
+        <a href="index.html" class="logout">Logout </a>
+    </div>
+
+<section class="hero">
+    <h1>Education Skills</h1>
+    <p>Explore skills gained through education</p>
+</section>
+
+<div class="container">
+    <h1 class="page-title">Education Skills</h1>
+    <div class="tab-content">
+        <form id="skillForm">
+            <div class="form-group"><input type="text" id="USN" placeholder="USN" required></div>
+            <div class="form-group"><input type="text" id="Skill_Name" placeholder="Skill Name" required></div>
+            <div class="form-group"><input type="text" id="Skill_Type" placeholder="Skill Type" required></div>
+            <div class="form-group"><button type="submit">Add Skill</button><button type="button" id="updateBtn" style="display:none;">Update Skill</button></div>
+        </form>
+    </div>
+    <div class="table-container">
+        <table id="skillTable">
+        <thead>
+        <tr><th>USN</th><th>Skill</th><th>Type</th><th>Action</th></tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function loadSkills() {
+    const res = await fetch("/education_skills");
+    const data = await res.json();
+    const tbody = document.querySelector("#skillTable tbody");
+    tbody.innerHTML = "";
+    data.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${s.USN}</td><td>${s.Skill_Name}</td><td>${s.Skill_Type}</td><td><button onclick="editSkill('${s.USN}','${s.Skill_Name}')">Edit</button> <button onclick="deleteSkill('${s.USN}','${s.Skill_Name}')">Delete</button></td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+async function deleteSkill(usn, skill) {
+    await fetch(`/deleteEducationSkill/${usn}/${skill}`, {method:"DELETE"});
+    loadSkills();
+}
+
+async function editSkill(usn, skill) {
+    try {
+        const res = await fetch("/education_skills");
+        if (!res.ok) throw new Error("Failed to fetch education skills");
+        const data = await res.json();
+        const skillItem = data.find(s => s.USN === usn && s.Skill_Name === skill);
+        if (skillItem) {
+            document.getElementById("USN").value = skillItem.USN;
+            document.getElementById("USN").readOnly = true;
+            document.getElementById("Skill_Name").value = skillItem.Skill_Name;
+            document.getElementById("Skill_Name").readOnly = true;
+            document.getElementById("Skill_Type").value = skillItem.Skill_Type;
+            document.getElementById("updateBtn").style.display = "inline";
+            document.querySelector("button[type='submit']").style.display = "none";
+            document.getElementById("updateBtn").onclick = () => updateSkill(usn, skill);
+        }
+    } catch (error) {
+        alert("Error editing skill: " + error.message);
+    }
+}
+
+async function updateSkill(usn, skill) {
+    try {
+        const data = {
+            Skill_Type: document.getElementById("Skill_Type").value
+        };
+        const res = await fetch(`/updateEducationSkill/${usn}/${skill}`, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+        if (!res.ok) throw new Error("Failed to update skill");
+        document.getElementById("USN").readOnly = false;
+        document.getElementById("Skill_Name").readOnly = false;
+        document.getElementById("skillForm").reset();
+        document.getElementById("updateBtn").style.display = "none";
+        document.querySelector("button[type='submit']").style.display = "inline";
+        loadSkills();
+    } catch (error) {
+        alert("Error updating skill: " + error.message);
+    }
+}
+
+document.getElementById("skillForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const data = {
+        USN: document.getElementById("USN").value,
+        Skill_Name: document.getElementById("Skill_Name").value,
+        Skill_Type: document.getElementById("Skill_Type").value
+    };
+    await fetch("/addEducationSkill", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+    document.getElementById("skillForm").reset();
+    loadSkills();
+});
+
+loadSkills();
+</script>
+</body>
+</html>
