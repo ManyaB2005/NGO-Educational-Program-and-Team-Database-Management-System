@@ -2,278 +2,443 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Query Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
 
-    <div class="navbar">
-        <a href="dashboard.html">Home</a>
-        <a href="member.html">Members</a>
-        <a href="teams.html">Teams</a>
-        <a href="education.html">Education</a>
-        <a href="member_education.html">Member Education</a>
-        <a href="education_skills.html">Education Skills</a>
-        <a href="session.html">Sessions</a>
-        <a href="events.html">Events</a>
-        <a href="query.html">Query Dashboard</a>
-        <a href="index.html" class="logout">Logout </a>
-    </div>
-
-<section class="hero">
-    <h1>Query Dashboard</h1>
-    <p>Run queries and generate reports</p>
-</section>
-
-<div class="query-dashboard">
-    <div class="query-panel">
-        <div class="query-selector">
-            <label for="querySelect">Choose a Query:</label>
-            <select id="querySelect" onchange="toggleInputs()">
-                <option value="">-- Select Query --</option>
-                <option value="sameAge">👥 Members of the Same Age</option>
-                <option value="membersInTeam">🤝 Members in Each Team</option>
-                <option value="sameInstitution">🏫 Members Studied in Same Institution</option>
-                <option value="sameSkillType">💡 Members Having Same Skill Type</option>
-                <option value="offlineSessions">💻 Sessions that Took Offline</option>
-                <option value="onlineSessions">💻 Sessions that Took Online</option>
-                <option value="sessionsSameDay">📅 Sessions on the Same Day</option>
-                <option value="eventsSameDay">🎉 Events that Took Place on the Same Day</option>
-                <option value="eventsSessionsSameDay">🔗 Events and Sessions on the Same Day</option>
-                <option value="sessionsByTeam">🏆 Sessions Conducted by Each Team</option>
-                <option value="totalSessionsByTeam">🏆 Total Sessions Conducted by Each Team</option>
-                <option value="totalEventsByTeam">🏆 Total Events Conducted by Each Team</option>
-                <option value="memberDetails">👤 Member Details</option>
-            </select>
-            <div id="teamIdContainer" class="input-group" style="display: none;">
-                <label for="teamIdInput">Enter Team ID:</label>
-                <input type="text" id="teamIdInput" placeholder="e.g., 1">
+    <div class="app-container">
+        <header class="header">
+            <div class="hamburger" onclick="toggleSidebar()">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
             </div>
-            <div id="memberIdContainer" class="input-group" style="display: none;">
-                <label for="memberIdInput">Enter Member ID:</label>
-                <input type="text" id="memberIdInput" placeholder="e.g., 1">
+            <h2 class="header-title">Query Dashboard</h2>
+            <a href="index.html" class="logout-btn">Logout</a>
+        </header>
+
+        <nav class="sidebar">
+            <div class="sidebar-header">Menu</div>
+            <a href="dashboard.html" class="nav-link"><div class="nav-icon">🏠</div>Dashboard</a>
+            <a href="member.html" class="nav-link"><div class="nav-icon">👥</div>Members</a>
+            <a href="teams.html" class="nav-link"><div class="nav-icon">🤝</div>Teams</a>
+            <a href="education.html" class="nav-link"><div class="nav-icon">🎓</div>Education</a>
+            <a href="member_education.html" class="nav-link"><div class="nav-icon">📚</div>Member Education</a>
+            <a href="education_skills.html" class="nav-link"><div class="nav-icon">💡</div>Education Skills</a>
+            <a href="session.html" class="nav-link"><div class="nav-icon">📅</div>Sessions</a>
+            <a href="events.html" class="nav-link"><div class="nav-icon">🎉</div>Events</a>
+            <a href="query.html" class="nav-link active"><div class="nav-icon">📊</div>Query Dashboard</a>
+        </nav>
+
+        <main class="content">
+            <section class="hero">
+                <h1>Query Dashboard</h1>
+                <p>Run powerful reports and visualize key organizational metrics.</p>
+            </section>
+
+            <div class="query-dashboard-stacked"> 
+                
+                <div class="query-panel-center">
+                    <h2 class="panel-heading"><i class="fas fa-search"></i> Select Report</h2>
+                    <div class="query-selector">
+                        <label for="querySelect">Choose a Query:</label>
+                        <select id="querySelect" onchange="toggleInputs()">
+                            <option value="">-- Select Query --</option>
+                            <optgroup label="Detailed Reports (Table)">
+                                <option value="sameAge">👥 Members of the Same Age</option>
+                                <option value="sameInstitution">🏫 Members Studied in Same Institution</option>
+                                <option value="sameSkillType">💡 Members Having Same Skill Type</option>
+                                <option value="offlineSessions">💻 Sessions that Took Offline</option>
+                                <option value="onlineSessions">💻 Sessions that Took Online</option>
+                                <option value="sessionsSameDay">📅 Sessions on the Same Day</option>
+                                <option value="eventsSameDay">🎉 Events that Took Place on the Same Day</option>
+                                <option value="eventsSessionsSameDay">🔗 Events and Sessions on the Same Day</option>
+                                <option value="sessionsByTeam">🏆 Sessions Conducted by Team (ID)</option>
+                                <option value="memberDetails">👤 Member Details (ID)</option>
+                            </optgroup>
+                            <optgroup label="Metric Reports (Chart)">
+                                <option value="membersInTeam">🤝 Member Count vs. Team Size</option>
+                                <option value="totalSessionsByTeam">🏆 Total Sessions by Each Team</option>
+                                <option value="totalEventsByTeam">🎉 Total Events by Each Team</option>
+                            </optgroup>
+                        </select>
+                        <div id="teamIdContainer" class="input-group" style="display: none;">
+                            <label for="teamIdInput">Enter Team ID:</label>
+                            <input type="number" id="teamIdInput" placeholder="e.g., 1">
+                        </div>
+                        <div id="memberIdContainer" class="input-group" style="display: none;">
+                            <label for="memberIdInput">Enter Member ID:</label>
+                            <input type="number" id="memberIdInput" placeholder="e.g., 1">
+                        </div>
+                    </div>
+                    <button onclick="runQuery()"><i class="fas fa-play"></i> Run Query</button>
+                </div>
+                
+                <div class="results-panel" id="resultsPanel" style="display: none;">
+                    
+                    <div class="visualization-section" id="visualizationSection">
+                        <h2 class="panel-heading visualization-heading"><i class="fas fa-chart-area"></i> Visualization</h2>
+                        <div class="chart-container-wrapper" id="chartWrapper">
+                            <canvas id="resultsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <h2 class="panel-heading table-heading"><i class="fas fa-table"></i> Raw Data Table</h2>
+                    
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="🔍 Search in table..." onkeyup="searchTable()">
+                    </div>
+                    <div class="table-container">
+                        <table id="queryTable">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </div>
-        <button onclick="runQuery()">Run Query</button>
+        </main>
     </div>
-    <div class="results-panel">
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="🔍 Search in table..." onkeyup="searchTable()">
-        </div>
-        <div class="table-container">
-            <table id="queryTable">
-            <thead></thead>
-            <tbody></tbody>
-            </table>
-        </div>
-    </div>
-</div>
 
 <script>
-async function runQuery() {
-    const queryType = document.getElementById("querySelect").value;
-    let query = "";
+    let myChart = null; 
 
-    switch(queryType) {
-        case "sameAge":
-            query = `SELECT First_Name, Age FROM Member WHERE Age IN (SELECT Age FROM Member GROUP BY Age HAVING COUNT(*) > 1) ORDER BY Age`;
-            break;
-        case "membersInTeam":
-            query = `SELECT t.Team_Name, t.Team_Size AS Total_Size, COUNT(m.Member_ID) AS Member_Count, (t.Team_Size - COUNT(m.Member_ID)) AS Vacancy
-                     FROM Teams t
-                     LEFT JOIN Member m ON t.Team_ID = m.Team_ID
-                     GROUP BY t.Team_Name, t.Team_Size`;
-            break;
+    function toggleSidebar() {
+        document.querySelector('.app-container').classList.toggle('sidebar-open');
+    }
 
-        case "sameInstitution":
-            query = `SELECT m.First_Name, e.Institution_Name
-                     FROM Member m
-                     JOIN Member_Education me ON m.Member_ID = me.Member_ID
-                     JOIN Education e ON me.USN = e.USN
-                     WHERE e.Institution_Name IN (
-                         SELECT e2.Institution_Name
-                         FROM Education e2
-                         JOIN Member_Education me2 ON e2.USN = me2.USN
-                         GROUP BY e2.Institution_Name
-                         HAVING COUNT(DISTINCT me2.Member_ID) > 1
-                     )
-                     ORDER BY e.Institution_Name`;
-            break;
-        case "sameSkillType":
-            query = `SELECT m.First_Name, es.Skill_Type
-                     FROM Member m
-                     JOIN Member_Education me ON m.Member_ID = me.Member_ID
-                     JOIN Education_Skills es ON me.USN = es.USN
-                     WHERE es.Skill_Type IN (
-                         SELECT es2.Skill_Type
-                         FROM Education_Skills es2
-                         JOIN Member_Education me2 ON es2.USN = me2.USN
-                         GROUP BY es2.Skill_Type
-                         HAVING COUNT(DISTINCT me2.Member_ID) > 1
-                     )
-                     ORDER BY es.Skill_Type`;
-            break;
-        case "offlineSessions":
-            query = `SELECT Session_Name, Session_Date, Member_ID
-                     FROM Session_Table
-                     WHERE Mode_of_Session = 'Offline'`;
-            break;
-        case "onlineSessions":
-            query = `SELECT Session_Name, Session_Date, Member_ID
-                     FROM Session_Table
-                     WHERE Mode_of_Session = 'Online'`;
-            break;
-        case "sessionsSameDay":
-            query = `SELECT s1.Session_Name AS Session1, s2.Session_Name AS Session2, s1.Session_Date
-                     FROM Session_Table s1
-                     JOIN Session_Table s2 ON s1.Session_Date = s2.Session_Date AND s1.Session_ID <> s2.Session_ID`;
-            break;
-        case "eventsSameDay":
-            query = `SELECT e1.Event_Name AS Event1, e2.Event_Name AS Event2, e1.Event_Date
-                     FROM Events e1
-                     JOIN Events e2 ON e1.Event_Date = e2.Event_Date AND e1.Event_ID <> e2.Event_ID`;
-            break;
-        case "eventsSessionsSameDay":
-            query = `SELECT s.Session_Name, e.Event_Name, s.Session_Date AS Date
-                     FROM Session_Table s
-                     JOIN Events e ON s.Session_Date = e.Event_Date`;
-            break;
-        case "sessionsByTeam":
-            const teamId = document.getElementById("teamIdInput").value.trim();
-            if (!teamId) {
-                alert("Please enter a Team ID.");
+    // --- Charting Logic ---
+
+    function renderChart(data, queryType) {
+        const visualizationSection = document.getElementById('visualizationSection');
+        const chartWrapper = document.getElementById('chartWrapper');
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        // Show visualization section
+        visualizationSection.style.display = 'block';
+        chartWrapper.style.display = 'block';
+
+        const labels = data.map(row => row[Object.keys(row)[0]] || 'N/A');
+        const values = data.map(row => row[Object.keys(row)[1]] || 0);
+        const secondValues = data.map(row => row[Object.keys(row)[2]] || 0); 
+
+        let chartType = 'bar';
+        let chartTitle = '';
+        let datasets = [];
+
+        switch (queryType) {
+            case 'membersInTeam':
+                chartTitle = 'Member Capacity by Team';
+                chartType = 'bar';
+                datasets = [
+                    {
+                        label: 'Team Size (Capacity)',
+                        data: values,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Member Count',
+                        data: secondValues,
+                        backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderWidth: 1
+                    }
+                ];
+                break;
+            case 'totalSessionsByTeam':
+                chartTitle = 'Total Sessions Conducted per Team';
+                chartType = 'doughnut';
+                datasets = [{
+                    label: 'Total Sessions',
+                    data: values,
+                    backgroundColor: [
+                        '#008080', '#3498db', '#e74c3c', '#f1c40f', '#9b59b6', '#2ecc71', '#1abc9c', '#f39c12'
+                    ],
+                    hoverOffset: 4
+                }];
+                break;
+            case 'totalEventsByTeam':
+                chartTitle = 'Total Events Organized per Team';
+                chartType = 'bar';
+                datasets = [{
+                    label: 'Total Events',
+                    data: values,
+                    backgroundColor: 'rgba(231, 76, 60, 0.7)', 
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    borderWidth: 1
+                }];
+                break;
+            default:
+                visualizationSection.style.display = 'none'; // Hide visualization for non-chartable queries
                 return;
+        }
+
+        myChart = new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: chartTitle,
+                        font: { size: 16, weight: '600' }
+                    },
+                    legend: {
+                        position: chartType === 'doughnut' ? 'right' : 'top',
+                    }
+                },
+                scales: chartType === 'bar' ? {
+                    y: { beginAtZero: true }
+                } : {}
             }
-            query = `SELECT Session_Name, Session_Date, Mode_of_Session
-                     FROM Session_Table
-                     WHERE Member_ID IN (SELECT Member_ID FROM Member WHERE Team_ID = ${teamId})`;
-            break;
-        case "totalSessionsByTeam":
-            query = `SELECT t.Team_Name, COUNT(s.Session_ID) AS Total_Sessions
-                     FROM Teams t
-                     LEFT JOIN Member m ON t.Team_ID = m.Team_ID
-                     LEFT JOIN Session_Table s ON m.Member_ID = s.Member_ID
-                     GROUP BY t.Team_Name, t.Team_ID`;
-            break;
-        case "totalEventsByTeam":
-            query = `SELECT t.Team_Name, COUNT(e.Event_ID) AS Total_Events
-                     FROM Teams t
-                     LEFT JOIN Events e ON t.Team_ID = e.Team_ID
-                     GROUP BY t.Team_Name, t.Team_ID`;
-            break;
-        case "memberDetails":
-            const memberId = document.getElementById("memberIdInput").value.trim();
-            if (!memberId) {
-                alert("Please enter a Member ID.");
-                return;
-            }
-            query = `SELECT m.First_Name, m.Last_Name, m.Email, m.DOB, m.Age, t.Team_Name AS Team,
-                     COUNT(DISTINCT s.Session_ID) AS Total_Sessions_Conducted,
-                     COUNT(DISTINCT e.Event_ID) AS Total_Events,
-                     GROUP_CONCAT(DISTINCT CONCAT(ed.Degree, ' from ', ed.Institution_Name) SEPARATOR '; ') AS Education_Details
-                     FROM Member m
-                     LEFT JOIN Teams t ON m.Team_ID = t.Team_ID
-                     LEFT JOIN Session_Table s ON m.Member_ID = s.Member_ID
-                     LEFT JOIN Events e ON t.Team_ID = e.Team_ID
-                     LEFT JOIN Member_Education me ON m.Member_ID = me.Member_ID
-                     LEFT JOIN Education ed ON me.USN = ed.USN
-                     WHERE m.Member_ID = ${memberId}
-                     GROUP BY m.Member_ID, m.First_Name, m.Last_Name, m.Email, m.DOB, m.Age, t.Team_Name`;
-            break;
-        default:
+        });
+    }
+
+    // --- Query and Table Logic ---
+
+    async function runQuery() {
+        const querySelect = document.getElementById("querySelect");
+        const resultsPanel = document.getElementById('resultsPanel');
+        const visualizationSection = document.getElementById('visualizationSection');
+        
+        const queryType = querySelect.value;
+        const selectedOption = querySelect.querySelector(`option[value="${queryType}"]`);
+        const isChartable = selectedOption && selectedOption.parentElement && selectedOption.parentElement.label.includes('Metric Reports');
+        
+        if (!queryType) {
             alert("Select a query!");
             return;
+        }
+        
+        // Hide previous chart/visualization section while running query
+        visualizationSection.style.display = 'none';
+        
+        let query = "";
+        
+        // --- SQL QUERY CONSTRUCTION (Abbreviated for brevity) ---
+        switch(queryType) {
+            case "sameAge":
+                query = `SELECT First_Name, Age FROM Member WHERE Age IN (SELECT Age FROM Member GROUP BY Age HAVING COUNT(*) > 1) ORDER BY Age`;
+                break;
+            case "membersInTeam":
+                query = `SELECT t.Team_Name, t.Team_Size AS Total_Size, COUNT(m.Member_ID) AS Member_Count, (t.Team_Size - COUNT(m.Member_ID)) AS Vacancy
+                         FROM Teams t
+                         LEFT JOIN Member m ON t.Team_ID = m.Team_ID
+                         GROUP BY t.Team_Name, t.Team_Size`;
+                break;
+            case "sameInstitution":
+                query = `SELECT m.First_Name, e.Institution_Name
+                         FROM Member m
+                         JOIN Member_Education me ON m.Member_ID = me.Member_ID
+                         JOIN Education e ON me.USN = e.USN
+                         WHERE e.Institution_Name IN (
+                            SELECT e2.Institution_Name
+                            FROM Education e2
+                            JOIN Member_Education me2 ON e2.USN = me2.USN
+                            GROUP BY e2.Institution_Name
+                            HAVING COUNT(DISTINCT me2.Member_ID) > 1
+                         )
+                         ORDER BY e.Institution_Name`;
+                break;
+            case "sameSkillType":
+                query = `SELECT m.First_Name, es.Skill_Type
+                         FROM Member m
+                         JOIN Member_Education me ON m.Member_ID = me.Member_ID
+                         JOIN Education_Skills es ON me.USN = es.USN
+                         WHERE es.Skill_Type IN (
+                            SELECT es2.Skill_Type
+                            FROM Education_Skills es2
+                            JOIN Member_Education me2 ON es2.USN = me2.USN
+                            GROUP BY es2.Skill_Type
+                            HAVING COUNT(DISTINCT me2.Member_ID) > 1
+                         )
+                         ORDER BY es.Skill_Type`;
+                break;
+            case "offlineSessions":
+                query = `SELECT s.Session_Name, s.Session_Date, m.First_Name AS Member_Name
+                         FROM Session_Table s JOIN Member m ON s.Member_ID = m.Member_ID
+                         WHERE s.Mode_of_Session = 'Offline'`;
+                break;
+            case "onlineSessions":
+                query = `SELECT s.Session_Name, s.Session_Date, m.First_Name AS Member_Name
+                         FROM Session_Table s JOIN Member m ON s.Member_ID = m.Member_ID
+                         WHERE s.Mode_of_Session = 'Online'`;
+                break;
+            case "sessionsSameDay":
+                query = `SELECT s1.Session_Name AS Session1, s2.Session_Name AS Session2, s1.Session_Date
+                         FROM Session_Table s1
+                         JOIN Session_Table s2 ON s1.Session_Date = s2.Session_Date AND s1.Session_ID <> s2.Session_ID`;
+                break;
+            case "eventsSameDay":
+                query = `SELECT e1.Event_Name AS Event1, e2.Event_Name AS Event2, e1.Event_Date
+                         FROM Events e1
+                         JOIN Events e2 ON e1.Event_Date = e2.Event_Date AND e1.Event_ID <> e2.Event_ID`;
+                break;
+            case "eventsSessionsSameDay":
+                query = `SELECT s.Session_Name, e.Event_Name, s.Session_Date AS Date
+                         FROM Session_Table s
+                         JOIN Events e ON s.Session_Date = e.Event_Date`;
+                break;
+            case "sessionsByTeam":
+                const teamId = document.getElementById("teamIdInput").value.trim();
+                if (!teamId) { alert("Please enter a Team ID."); return; }
+                query = `SELECT s.Session_Name, s.Session_Date, s.Mode_of_Session
+                         FROM Session_Table s
+                         WHERE s.Member_ID IN (SELECT Member_ID FROM Member WHERE Team_ID = ${teamId})`;
+                break;
+            case "totalSessionsByTeam":
+                query = `SELECT t.Team_Name, COUNT(s.Session_ID) AS Total_Sessions
+                         FROM Teams t
+                         LEFT JOIN Member m ON t.Team_ID = m.Team_ID
+                         LEFT JOIN Session_Table s ON m.Member_ID = s.Member_ID
+                         GROUP BY t.Team_Name, t.Team_ID`;
+                break;
+            case "totalEventsByTeam":
+                query = `SELECT t.Team_Name, COUNT(e.Event_ID) AS Total_Events
+                         FROM Teams t
+                         LEFT JOIN Events e ON t.Team_ID = e.Team_ID
+                         GROUP BY t.Team_Name, t.Team_ID`;
+                break;
+            case "memberDetails":
+                const memberId = document.getElementById("memberIdInput").value.trim();
+                if (!memberId) { alert("Please enter a Member ID."); return; }
+                query = `SELECT m.First_Name, m.Last_Name, m.Email, m.DOB, m.Age, t.Team_Name AS Team,
+                         COUNT(DISTINCT s.Session_ID) AS Sessions_Conducted,
+                         GROUP_CONCAT(DISTINCT CONCAT(ed.Degree, ' from ', ed.Institution_Name) SEPARATOR '; ') AS Education_Details
+                         FROM Member m
+                         LEFT JOIN Teams t ON m.Team_ID = t.Team_ID
+                         LEFT JOIN Session_Table s ON m.Member_ID = s.Member_ID
+                         LEFT JOIN Member_Education me ON m.Member_ID = me.Member_ID
+                         LEFT JOIN Education ed ON me.USN = ed.USN
+                         WHERE m.Member_ID = ${memberId}
+                         GROUP BY m.Member_ID, m.First_Name, m.Last_Name, m.Email, m.DOB, m.Age, t.Team_Name`;
+                break;
+            default:
+                return;
+        }
+
+        const res = await fetch("/runQuery", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({query})
+        });
+        const data = await res.json();
+        
+        // Show results panel before populating
+        resultsPanel.style.display = 'block'; 
+
+        displayTable(data);
+        
+        if (isChartable && data.length > 0) {
+            renderChart(data, queryType);
+        } else {
+             if (myChart) myChart.destroy();
+             visualizationSection.style.display = 'none'; // Hide visualization panel if not chartable
+        }
     }
 
-    const res = await fetch("/runQuery", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({query})
-    });
-    const data = await res.json();
-    displayTable(data);
-}
+    function displayTable(data) {
+        const table = document.getElementById("queryTable");
+        const thead = table.querySelector("thead");
+        const tbody = table.querySelector("tbody");
+        const tableContainer = table.closest('.table-container');
 
-function displayTable(data) {
-    const table = document.getElementById("queryTable");
-    const thead = table.querySelector("thead");
-    const tbody = table.querySelector("tbody");
-    const tableContainer = table.closest('.table-container');
+        tbody.innerHTML = "";
+        thead.innerHTML = "";
+        
+        const chartHeading = document.querySelector('.table-heading');
 
-    tbody.innerHTML = "";
-    thead.innerHTML = "";
+        if(data.length === 0 || (data.length === 1 && Object.values(data[0]).every(v => v === null || v === ''))) {
+            chartHeading.style.display = 'none';
+            tableContainer.classList.add('hidden');
+            tableContainer.classList.remove('visible');
+            const noResultRow = document.createElement("tr");
+            const noResultCell = document.createElement("td");
+            noResultCell.textContent = "No result found for this query.";
+            noResultCell.colSpan = 10;
+            noResultCell.style.textAlign = "center";
+            noResultCell.style.fontWeight = "bold";
+            noResultRow.appendChild(noResultCell);
+            tbody.appendChild(noResultRow);
+            tableContainer.classList.remove('hidden');
+            tableContainer.classList.add('visible');
+            return;
+        }
 
-    if(data.length === 0) {
-        tableContainer.classList.add('hidden');
-        tableContainer.classList.remove('visible');
-        // Add no result message
-        const noResultRow = document.createElement("tr");
-        const noResultCell = document.createElement("td");
-        noResultCell.textContent = "No such result";
-        noResultCell.colSpan = 1; // Adjust colspan if needed
-        noResultCell.style.textAlign = "center";
-        noResultCell.style.fontWeight = "bold";
-        noResultRow.appendChild(noResultCell);
-        tbody.appendChild(noResultRow);
         tableContainer.classList.remove('hidden');
         tableContainer.classList.add('visible');
-        return;
-    }
 
-    tableContainer.classList.remove('hidden');
-    tableContainer.classList.add('visible');
-
-    // Table headers
-    const headerRow = document.createElement("tr");
-    Object.keys(data[0]).forEach(h => {
-        const th = document.createElement("th");
-        th.textContent = h;
-        headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-
-    // Table rows
-    data.forEach(row => {
-        const tr = document.createElement("tr");
-        Object.values(row).forEach(val => {
-            const td = document.createElement("td");
-            if(val && typeof val === "string" && val.includes("T")) {
-                td.textContent = val.split("T")[0]; // Only YYYY-MM-DD
-            } else {
-                td.textContent = val ?? "";
-            }
-            tr.appendChild(td);
+        // Table headers
+        const headerRow = document.createElement("tr");
+        Object.keys(data[0]).forEach(h => {
+            const th = document.createElement("th");
+            th.textContent = h.replace(/_/g, ' '); 
+            headerRow.appendChild(th);
         });
-        tbody.appendChild(tr);
-    });
-}
+        thead.appendChild(headerRow);
 
-// Search bar functionality
-function searchTable() {
-    const input = document.getElementById("searchInput").value.toLowerCase();
-    const rows = document.querySelectorAll("#queryTable tbody tr");
-    rows.forEach(row => {
-
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(input) ? "" : "none";
-    });
-}
-
-function toggleInputs() {
-    const select = document.getElementById("querySelect");
-    const teamContainer = document.getElementById("teamIdContainer");
-    const memberContainer = document.getElementById("memberIdContainer");
-    if (select.value === "sessionsByTeam") {
-        teamContainer.style.display = "block";
-        memberContainer.style.display = "none";
-    } else if (select.value === "memberDetails") {
-        memberContainer.style.display = "block";
-        teamContainer.style.display = "none";
-    } else {
-        teamContainer.style.display = "none";
-        memberContainer.style.display = "none";
+        // Table rows
+        data.forEach(row => {
+            const tr = document.createElement("tr");
+            Object.values(row).forEach(val => {
+                const td = document.createElement("td");
+                if(val && typeof val === "string" && val.includes("T")) {
+                    td.textContent = val.split("T")[0]; 
+                } else {
+                    td.textContent = val ?? "-"; 
+                }
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
     }
-}
+
+    function searchTable() {
+        const input = document.getElementById("searchInput").value.toLowerCase();
+        const rows = document.querySelectorAll("#queryTable tbody tr");
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(input) ? "" : "none";
+        });
+    }
+
+    function toggleInputs() {
+        const select = document.getElementById("querySelect");
+        const teamContainer = document.getElementById("teamIdContainer");
+        const memberContainer = document.getElementById("memberIdContainer");
+        
+        // Hide results when changing query selection
+        document.getElementById('resultsPanel').style.display = 'none';
+        if (myChart) myChart.destroy();
+        
+        if (select.value === "sessionsByTeam") {
+            teamContainer.style.display = "flex";
+            memberContainer.style.display = "none";
+        } else if (select.value === "memberDetails") {
+            memberContainer.style.display = "flex";
+            teamContainer.style.display = "none";
+        } else {
+            memberContainer.style.display = "none";
+            teamContainer.style.display = "none";
+        }
+    }
 </script>
 </body>
 </html>

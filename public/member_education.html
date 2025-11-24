@@ -2,118 +2,162 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Member Education</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Member Education Linkage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
 
-    <div class="navbar">
-        <a href="dashboard.html">Home</a>
-        <a href="member.html">Members</a>
-        <a href="teams.html">Teams</a>
-        <a href="education.html">Education</a>
-        <a href="member_education.html">Member Education</a>
-        <a href="education_skills.html">Education Skills</a>
-        <a href="session.html">Sessions</a>
-        <a href="events.html">Events</a>
-        <a href="query.html">Query Dashboard</a>
-        <a href="index.html" class="logout">Logout </a>
-    </div>
+    <div class="app-container">
+        <header class="header">
+            <div class="hamburger" onclick="toggleSidebar()">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <h2 class="header-title">Member Education</h2>
+            <a href="index.html" class="logout-btn">Logout</a>
+        </header>
 
-<section class="hero">
-    <h1>Member Education</h1>
-    <p>Link members to their educational achievements</p>
-</section>
+        <nav class="sidebar">
+            <div class="sidebar-header">Menu</div>
+            <a href="dashboard.html" class="nav-link"><div class="nav-icon">🏠</div>Dashboard</a>
+            <a href="member.html" class="nav-link"><div class="nav-icon">👥</div>Members</a>
+            <a href="teams.html" class="nav-link"><div class="nav-icon">🤝</div>Teams</a>
+            <a href="education.html" class="nav-link"><div class="nav-icon">🎓</div>Education</a>
+            <a href="member_education.html" class="nav-link active"><div class="nav-icon">📚</div>Member Education</a>
+            <a href="education_skills.html" class="nav-link"><div class="nav-icon">💡</div>Education Skills</a>
+            <a href="session.html" class="nav-link"><div class="nav-icon">📅</div>Sessions</a>
+            <a href="events.html" class="nav-link"><div class="nav-icon">🎉</div>Events</a>
+            <a href="query.html" class="nav-link"><div class="nav-icon">📊</div>Query Dashboard</a>
+        </nav>
 
-<div class="container">
-    <h1 class="page-title">Member Education</h1>
-    <div class="tab-content">
-        <form id="memberEduForm">
-            <div class="form-group"><input type="text" id="USN" placeholder="USN" required></div>
-            <div class="form-group"><input type="number" id="Member_ID" placeholder="Member ID" required></div>
-            <div class="form-group"><button type="submit">Add</button><button type="button" id="updateBtn" style="display:none;">Update</button></div>
-        </form>
+        <main class="content">
+            <section class="hero">
+                <h1>Member Education Linkage</h1>
+                <p>Link members to their educational achievements and qualifications.</p>
+            </section>
+
+            <div class="container">
+                <h2 class="section-heading page-title">Link Education Record to Member</h2>
+                <div class="tab-content">
+                    <form id="memberEduForm">
+                        <div class="form-group">
+                            <label for="USN">USN (Education Record ID)</label>
+                            <input type="text" id="USN" placeholder="Enter USN" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="Member_ID">Member ID</label>
+                            <input type="number" id="Member_ID" placeholder="Enter Member ID" required>
+                        </div>
+                        <div class="form-group form-actions">
+                            <button type="submit"><i class="fas fa-link"></i> Link Record</button>
+                            <button type="button" id="updateBtn" style="display:none;"><i class="fas fa-edit"></i> Update Link</button>
+                        </div>
+                    </form>
+                </div>
+                <h2 class="section-heading">Existing Linkages</h2>
+                <div class="table-container">
+                    <table id="memberEduTable">
+                        <thead>
+                            <tr><th>USN</th><th>Member ID</th><th>Action</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
-    <div class="table-container">
-        <table id="memberEduTable">
-        <thead>
-        <tr><th>USN</th><th>Member ID</th><th>Action</th></tr>
-        </thead>
-        <tbody></tbody>
-        </table>
-    </div>
-</div>
 
 <script>
-async function loadMemberEdu() {
-    const res = await fetch("/member_education");
-    const data = await res.json();
-    const tbody = document.querySelector("#memberEduTable tbody");
-    tbody.innerHTML = "";
-    data.forEach(m => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${m.USN}</td><td>${m.Member_ID}</td><td><button onclick="editMemberEdu('${m.USN}',${m.Member_ID})">Edit</button> <button onclick="deleteMemberEdu('${m.USN}',${m.Member_ID})">Delete</button></td>`;
-        tbody.appendChild(tr);
-    });
-}
+    function toggleSidebar() {
+        document.querySelector('.app-container').classList.toggle('sidebar-open');
+    }
 
-async function deleteMemberEdu(usn, id) {
-    await fetch(`/deleteMemberEducation/${usn}/${id}`, {method:"DELETE"});
-    loadMemberEdu();
-}
-
-async function editMemberEdu(usn, id) {
-    try {
+    async function loadMemberEdu() {
         const res = await fetch("/member_education");
-        if (!res.ok) throw new Error("Failed to fetch member education");
         const data = await res.json();
-        const memberEdu = data.find(m => m.USN === usn && m.Member_ID == id);
-        if (memberEdu) {
-            document.getElementById("USN").value = memberEdu.USN;
-            document.getElementById("USN").readOnly = true;
-            document.getElementById("Member_ID").value = memberEdu.Member_ID;
-            document.getElementById("Member_ID").readOnly = true;
-            document.getElementById("updateBtn").style.display = "inline";
-            document.querySelector("button[type='submit']").style.display = "none";
-            document.getElementById("updateBtn").onclick = () => updateMemberEdu(usn, id);
-        }
-    } catch (error) {
-        alert("Error editing member education: " + error.message);
+        const tbody = document.querySelector("#memberEduTable tbody");
+        tbody.innerHTML = "";
+        data.forEach(m => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${m.USN}</td>
+                <td>${m.Member_ID}</td>
+                <td>
+                    <button onclick="editMemberEdu('${m.USN}',${m.Member_ID})" title="Edit"><i class="fas fa-pencil-alt"></i></button> 
+                    <button onclick="deleteMemberEdu('${m.USN}',${m.Member_ID})" title="Delete"><i class="fas fa-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
-}
 
-async function updateMemberEdu(usn, id) {
-    try {
-        const data = {
-            new_USN: document.getElementById("USN").value,
-            new_Member_ID: +document.getElementById("Member_ID").value
-        };
-        const res = await fetch(`/updateMemberEducation/${usn}/${id}`, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
-        if (!res.ok) throw new Error("Failed to update member education");
-        document.getElementById("USN").readOnly = false;
-        document.getElementById("Member_ID").readOnly = false;
-        document.getElementById("memberEduForm").reset();
-        document.getElementById("updateBtn").style.display = "none";
-        document.querySelector("button[type='submit']").style.display = "inline";
+    async function deleteMemberEdu(usn, id) {
+        if (!confirm(`Are you sure you want to delete the linkage for USN ${usn} and Member ${id}?`)) return;
+        await fetch(`/deleteMemberEducation/${usn}/${id}`, {method:"DELETE"});
         loadMemberEdu();
-    } catch (error) {
-        alert("Error updating member education: " + error.message);
     }
-}
 
-document.getElementById("memberEduForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const data = {
-        USN: document.getElementById("USN").value,
-        Member_ID: +document.getElementById("Member_ID").value
-    };
-    await fetch("/addMemberEducation", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
-    document.getElementById("memberEduForm").reset();
+    async function editMemberEdu(usn, id) {
+        try {
+            const res = await fetch("/member_education");
+            if (!res.ok) throw new Error("Failed to fetch member education");
+            const data = await res.json();
+            const memberEdu = data.find(m => m.USN === usn && m.Member_ID == id);
+            if (memberEdu) {
+                document.getElementById("USN").value = memberEdu.USN;
+                document.getElementById("USN").readOnly = true;
+                document.getElementById("Member_ID").value = memberEdu.Member_ID;
+                document.getElementById("Member_ID").readOnly = true;
+                document.getElementById("updateBtn").style.display = "inline";
+                document.querySelector("button[type='submit']").style.display = "none";
+                document.getElementById("updateBtn").onclick = () => updateMemberEdu(usn, id);
+                document.getElementById("memberEduForm").scrollIntoView({ behavior: 'smooth' });
+            }
+        } catch (error) {
+            alert("Error editing member education: " + error.message);
+        }
+    }
+
+    async function updateMemberEdu(usn, id) {
+        // NOTE: Since USN and Member_ID are primary keys, updating is typically restricted to linked attributes.
+        // The original code only allowed updating the Member_ID and USN themselves, which is unusual for composite PKs.
+        // Keeping original behavior but recommending to use Edit to delete old and add new link.
+        try {
+            const data = {
+                new_USN: document.getElementById("USN").value,
+                new_Member_ID: +document.getElementById("Member_ID").value
+            };
+            const res = await fetch(`/updateMemberEducation/${usn}/${id}`, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+            if (!res.ok) throw new Error("Failed to update member education");
+            document.getElementById("USN").readOnly = false;
+            document.getElementById("Member_ID").readOnly = false;
+            document.getElementById("memberEduForm").reset();
+            document.getElementById("updateBtn").style.display = "none";
+            document.querySelector("button[type='submit']").style.display = "inline";
+            loadMemberEdu();
+        } catch (error) {
+            alert("Error updating member education: " + error.message);
+        }
+    }
+
+    document.getElementById("memberEduForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const data = {
+            USN: document.getElementById("USN").value,
+            Member_ID: +document.getElementById("Member_ID").value
+        };
+        await fetch("/addMemberEducation", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+        document.getElementById("memberEduForm").reset();
+        loadMemberEdu();
+    });
+
     loadMemberEdu();
-});
-
-loadMemberEdu();
 </script>
 </body>
 </html>
